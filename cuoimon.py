@@ -1,130 +1,120 @@
 import json
 import os
 
-FILE_NAME = "data.json"
+TEN_FILE = "data.json"
 
-def load_data():
-    if os.path.exists(FILE_NAME):
+def doc_du_lieu():
+    if os.path.exists(TEN_FILE):
         try:
-            with open(FILE_NAME, "r", encoding="utf-8") as f:
+            with open(TEN_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
-            return []
+        except: return []
     return []
 
-def save_data(player_list):
-    with open(FILE_NAME, "w", encoding="utf-8") as f:
-        json.dump(player_list, f, indent=4, ensure_ascii=False)
+def luu_du_lieu(danh_sach):
+    with open(TEN_FILE, "w", encoding="utf-8") as f:
+        json.dump(danh_sach, f, indent=4, ensure_ascii=False)
 
-def calculate_stats(player):
-    player["score"] = (player["goals"] * 2) + player["assists"]
-    if player["score"] > 40:
-        player["rank"] = "Vàng"
-    elif player["score"] > 20:
-        player["rank"] = "Bạc"
-    else:
-        player["rank"] = "Đồng"
-    return player
+def tinh_toan(cau_thu):
+    cau_thu["diem"] = (cau_thu["ban_thang"] * 2) + cau_thu["kien_tao"]
+    if cau_thu["diem"] > 40: cau_thu["danh_hieu"] = "Vàng"
+    elif cau_thu["diem"] > 20: cau_thu["danh_hieu"] = "Bạc"
+    else: cau_thu["danh_hieu"] = "Đồng"
+    return cau_thu
 
-def display_list(player_list):
+def hien_thi(danh_sach):
     print(f"\n{'Mã':<10} {'Tên':<15} {'Số trận':<10} {'Bàn':<10} {'Kiến tạo':<10} {'Điểm':<10} {'Danh hiệu':<10}")
-    print("-" * 80)
-    for p in player_list:
-        print(f"{p.get('id', ''):<10} {p.get('name', ''):<15} {p.get('matches', 0):<10} {p.get('goals', 0):<10} {p.get('assists', 0):<10} {p.get('score', 0):<10} {p.get('rank', ''):<10}")
+    for ct in danh_sach:
+        print(f"{ct['ma']:<10} {ct['ten']:<15} {ct['so_tran']:<10} {ct['ban_thang']:<10} {ct['kien_tao']:<10} {ct['diem']:<10} {ct['danh_hieu']:<10}")
 
-def add_player(player_list):
-    player_id = input("Nhập mã cầu thủ: ")
-    if any(p['id'] == player_id for p in player_list):
+def them(danh_sach):
+    ma = input("Nhập mã: ")
+    if any(ct['ma'] == ma for ct in danh_sach):
         print("Mã đã tồn tại!")
         return
-    name = input("Nhập tên: ")
-    matches = int(input("Số trận: "))
-    goals = int(input("Bàn thắng: "))
-    assists = int(input("Kiến tạo: "))
-    
-    new_player = {"id": player_id, "name": name, "matches": matches, "goals": goals, "assists": assists}
-    player_list.append(calculate_stats(new_player))
-    save_data(player_list)
+    ten = input("Nhập tên: ")
+    so_tran = int(input("Số trận: "))
+    ban_thang = int(input("Bàn thắng: "))
+    kien_tao = int(input("Kiến tạo: "))
+    ct = {"ma": ma, "ten": ten, "so_tran": so_tran, "ban_thang": ban_thang, "kien_tao": kien_tao}
+    danh_sach.append(tinh_toan(ct))
+    luu_du_lieu(danh_sach)
     print("Thêm thành công!")
 
-def update_player(player_list):
-    player_id = input("Nhập mã cầu thủ cần cập nhật: ")
-    for p in player_list:
-        if p["id"] == player_id:
-            p["goals"] = int(input("Nhập bàn thắng mới: "))
-            p["assists"] = int(input("Nhập kiến tạo mới: "))
-            calculate_stats(p)
-            save_data(player_list)
+def cap_nhat(danh_sach):
+    ma = input("Nhập mã cần cập nhật: ")
+    for ct in danh_sach:
+        if ct["ma"] == ma:
+            ct["ban_thang"] = int(input("Bàn thắng mới: "))
+            ct["kien_tao"] = int(input("Kiến tạo mới: "))
+            tinh_toan(ct)
+            luu_du_lieu(danh_sach)
             print("Cập nhật thành công!")
             return
-    print("Không tìm thấy cầu thủ!")
+    print("Không tìm thấy!")
 
-def delete_player(player_list):
-    player_id = input("Nhập mã cầu thủ cần xóa: ")
-    for i, p in enumerate(player_list):
-        if p["id"] == player_id:
-            if input("Bạn có chắc muốn xóa? (y/n): ").lower() == 'y':
-                player_list.pop(i)
-                save_data(player_list)
-                print("Đã xóa thành công!")
+def xoa(danh_sach):
+    ma = input("Nhập mã cần xóa: ")
+    for i, ct in enumerate(danh_sach):
+        if ct["ma"] == ma:
+            if input("Bạn chắc chắn xóa? (y/n): ") == 'y':
+                danh_sach.pop(i)
+                luu_du_lieu(danh_sach)
+                print("Đã xóa!")
                 return
     print("Không tìm thấy!")
 
-def search_player(player_list):
-    keyword = input("Nhập tên hoặc mã để tìm: ").lower()
-    results = [p for p in player_list if keyword in p['name'].lower() or keyword in p['id'].lower()]
-    display_list(results)
+def tim_kiem(danh_sach):
+    tu_khoa = input("Nhập mã hoặc tên: ").lower()
+    ket_qua = [ct for ct in danh_sach if tu_khoa in ct['ten'].lower() or tu_khoa in ct['ma'].lower()]
+    hien_thi(ket_qua)
 
-def sort_players(player_list):
+def sap_xep(danh_sach):
     print("1. Điểm giảm dần | 2. Bàn thắng giảm dần")
-    choice = input("Chọn: ")
-    key = "score" if choice == '1' else "goals"
-    player_list.sort(key=lambda x: x.get(key, 0), reverse=True)
-    display_list(player_list)
+    lua_chon = input("Chọn: ")
+    khoa = "diem" if lua_chon == '1' else "ban_thang"
+    danh_sach.sort(key=lambda x: x[khoa], reverse=True)
+    hien_thi(danh_sach)
 
-def stats_rank(player_list):
-    counts = {"Vàng": 0, "Bạc": 0, "Đồng": 0}
-    for p in player_list:
-        counts[p.get("rank", "Đồng")] += 1
-    print("\n--- Thống kê số lượng theo danh hiệu ---")
-    for k, v in counts.items():
-        print(f"{k}: {v} cầu thủ")
+def thong_ke_danh_hieu(danh_sach):
+    for hang in ["Vàng", "Bạc", "Đồng"]:
+        print(f"Danh hiệu {hang}: {[ct['ten'] for ct in danh_sach if ct['danh_hieu'] == hang]}")
 
-def display_extreme_ranks(player_list):
-    if not player_list: return
-    print("Chức năng hiển thị danh hiệu cao nhất/thấp nhất.")
-    display_list(player_list)
+def thong_ke_so_luong(danh_sach):
+    dem = {"Vàng": 0, "Bạc": 0, "Đồng": 0}
+    for ct in danh_sach: dem[ct["danh_hieu"]] += 1
+    print(f"Số lượng: {dem}")
+
+def hien_thi_max_min(danh_sach):
+    if not danh_sach: return
+    hien_thi(danh_sach)
 
 def main():
-    player_list = load_data()
+    danh_sach = doc_du_lieu()
     while True:
         print("\n--- MENU QUẢN LÝ CẦU THỦ ---")
-        print("1. Hiển thị danh sách cầu thủ")
+        print("1. Hiển thị danh sách")
         print("2. Thêm mới cầu thủ")
         print("3. Cập nhật thông tin")
         print("4. Xoá cầu thủ")
         print("5. Tìm kiếm cầu thủ")
         print("6. Sắp xếp danh sách")
-        print("7. Thống kê danh hiệu")
-        print("8. Thống kê số lượng cầu thủ theo danh hiệu")
-        print("9. Hiển thị danh sách max/min danh hiệu")
+        print("7. Thống kê cầu thủ theo danh hiệu")
+        print("8. Thống kê số lượng theo danh hiệu")
+        print("9. Hiển thị danh sách danh hiệu")
         print("10. Thoát")
         
-        choice = input("Chọn chức năng (1-10): ")
-        
-        if choice == '1': display_list(player_list)
-        elif choice == '2': add_player(player_list)
-        elif choice == '3': update_player(player_list)
-        elif choice == '4': delete_player(player_list)
-        elif choice == '5': search_player(player_list)
-        elif choice == '6': sort_players(player_list)
-        elif choice == '7': stats_rank(player_list)
-        elif choice == '8': stats_rank(player_list)
-        elif choice == '9': display_extreme_ranks(player_list)
-        elif choice == '10': 
-            print("Đã thoát chương trình.")
-            break
-        else: print("Lựa chọn không hợp lệ!")
+        chon = input("Chọn chức năng: ")
+        if chon == '1': hien_thi(danh_sach)
+        elif chon == '2': them(danh_sach)
+        elif chon == '3': cap_nhat(danh_sach)
+        elif chon == '4': xoa(danh_sach)
+        elif chon == '5': tim_kiem(danh_sach)
+        elif chon == '6': sap_xep(danh_sach)
+        elif chon == '7': thong_ke_danh_hieu(danh_sach)
+        elif chon == '8': thong_ke_so_luong(danh_sach)
+        elif chon == '9': hien_thi_max_min(danh_sach)
+        elif chon == '10': break
 
 if __name__ == "__main__":
     main()
